@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+import { CursorTool, PDFCursorTools } from './pdf_cursor_tools';
 import { createPromiseCapability, PDFJS } from 'pdfjs-lib';
 import {
   CSS_UNITS, DEFAULT_SCALE, DEFAULT_SCALE_VALUE, getVisibleElements,
@@ -116,6 +117,11 @@ var PDFViewer = (function pdfViewer() {
     this.enablePrintAutoRotate = options.enablePrintAutoRotate || false;
     this.renderer = options.renderer || RendererType.CANVAS;
     this.l10n = options.l10n || NullL10n;
+    this.pdfCursorTools = new PDFCursorTools({
+      container: this.container,
+      eventBus: this.eventBus,
+      preferences: null
+    });
 
     this.defaultRenderingQueue = !options.renderingQueue;
     if (this.defaultRenderingQueue) {

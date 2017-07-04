@@ -253,13 +253,13 @@ function createBundle(defines) {
     return mainOutput; // don't need a worker file.
   }
 
-  var workerAMDName = 'pdfjs-dist/build/pdf.worker';
+  var workerAMDName = 'pdfjsDistBuildPdfWorker';
   var workerOutputName = 'pdf.worker.js';
 
   var workerFileConfig = createWebpackConfig(defines, {
     filename: workerOutputName,
     library: workerAMDName,
-    libraryTarget: 'umd',
+    libraryTarget: 'var',
     umdNamedDefine: true,
   });
   var workerOutput = gulp.src('./src/pdf.worker.js')

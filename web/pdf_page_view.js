@@ -364,7 +364,7 @@ class PDFPageView {
     let textLayer = null;
     if (this.textLayerFactory) {
       let textLayerDiv = document.createElement('div');
-      textLayerDiv.className = 'textLayer';
+      textLayerDiv.className = 'th-selectable-container th-text-layer textLayer';
       textLayerDiv.style.width = canvasWrapper.style.width;
       textLayerDiv.style.height = canvasWrapper.style.height;
       if (this.annotationLayer && this.annotationLayer.div) {

@@ -70,7 +70,7 @@ class AnnotationLayerBuilder {
         }
 
         this.div = document.createElement('div');
-        this.div.className = 'annotationLayer';
+        this.div.className = 'th-annotation-layer annotationLayer';
         this.pageDiv.appendChild(this.div);
         parameters.div = this.div;
 

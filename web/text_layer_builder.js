@@ -62,7 +62,7 @@ var TextLayerBuilder = (function TextLayerBuilderClosure() {
 
       if (!this.enhanceTextSelection) {
         var endOfContent = document.createElement('div');
-        endOfContent.className = 'endOfContent';
+        endOfContent.className = 'th-end-of-content endOfContent';
         this.textLayerDiv.appendChild(endOfContent);
       }
 
@@ -251,14 +251,14 @@ var TextLayerBuilder = (function TextLayerBuilderClosure() {
 
         if (begin.divIdx === end.divIdx) {
           appendTextToDiv(begin.divIdx, begin.offset, end.offset,
-                          'highlight' + highlightSuffix);
+                          'th-highlighted-item th-highlight highlight' + highlightSuffix);
         } else {
           appendTextToDiv(begin.divIdx, begin.offset, infinity.offset,
-                          'highlight begin' + highlightSuffix);
+                          'th-highlighted-item th-highlight highlight th-begin begin' + highlightSuffix);
           for (var n0 = begin.divIdx + 1, n1 = end.divIdx; n0 < n1; n0++) {
-            textDivs[n0].className = 'highlight middle' + highlightSuffix;
+            textDivs[n0].className = 'th-highlighted-item th-highlight highlight th-middle middle' + highlightSuffix;
           }
-          beginText(end, 'highlight end' + highlightSuffix);
+          beginText(end, 'th-highlighted-item th-highlight highlight th-end end' + highlightSuffix);
         }
         prevEnd = end;
       }

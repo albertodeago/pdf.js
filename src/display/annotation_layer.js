@@ -284,7 +284,7 @@ var LinkAnnotationElement = (function LinkAnnotationElementClosure() {
      * @returns {HTMLSectionElement}
      */
     render: function LinkAnnotationElement_render() {
-      this.container.className = 'linkAnnotation';
+      this.container.className = 'th-highlighted-hover th-link-annotation linkAnnotation';
 
       var link = document.createElement('a');
       addLinkAttributes(link, {
@@ -438,7 +438,7 @@ var TextWidgetAnnotationElement = (
      * @returns {HTMLSectionElement}
      */
     render: function TextWidgetAnnotationElement_render() {
-      this.container.className = 'textWidgetAnnotation';
+      this.container.className = 'th-text-widget-annotation textWidgetAnnotation';
 
       var element = null;
       if (this.renderInteractiveForms) {
@@ -543,7 +543,7 @@ var CheckboxWidgetAnnotationElement =
      * @returns {HTMLSectionElement}
      */
     render: function CheckboxWidgetAnnotationElement_render() {
-      this.container.className = 'buttonWidgetAnnotation checkBox';
+      this.container.className = 'th-button-widget-annotation buttonWidgetAnnotation checkBox';
 
       var element = document.createElement('input');
       element.disabled = this.data.readOnly;
@@ -581,7 +581,7 @@ var RadioButtonWidgetAnnotationElement =
      * @returns {HTMLSectionElement}
      */
     render: function RadioButtonWidgetAnnotationElement_render() {
-      this.container.className = 'buttonWidgetAnnotation radioButton';
+      this.container.className = 'th-button-widget-annotation buttonWidgetAnnotation radioButton';
 
       var element = document.createElement('input');
       element.disabled = this.data.readOnly;
@@ -620,7 +620,7 @@ var ChoiceWidgetAnnotationElement = (
      * @returns {HTMLSectionElement}
      */
     render: function ChoiceWidgetAnnotationElement_render() {
-      this.container.className = 'choiceWidgetAnnotation';
+      this.container.className = 'th-choice-widget-annotation choiceWidgetAnnotation';
 
       var selectElement = document.createElement('select');
       selectElement.disabled = this.data.readOnly;
