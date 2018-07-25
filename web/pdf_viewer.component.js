@@ -27,6 +27,8 @@ var pdfjsWebUIUtils = require('./ui_utils.js');
 var pdfjsWebDownloadManager = require('./download_manager.js');
 var pdfjsWebGenericL10n = require('./genericl10n.js');
 
+var pdfjsThronViewer = require('./pdf_thron_viewer');
+
 var PDFJS = pdfjsLib.PDFJS;
 
 PDFJS.PDFViewer = pdfjsWebPDFViewer.PDFViewer;
@@ -47,5 +49,7 @@ PDFJS.DownloadManager = pdfjsWebDownloadManager.DownloadManager;
 PDFJS.ProgressBar = pdfjsWebUIUtils.ProgressBar;
 PDFJS.GenericL10n = pdfjsWebGenericL10n.GenericL10n;
 PDFJS.NullL10n = pdfjsWebUIUtils.NullL10n;
+
+PDFJS.THRONPDFViewer = pdfjsThronViewer.THRONPDFViewer;
 
 exports.PDFJS = PDFJS;
