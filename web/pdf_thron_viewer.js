@@ -42,9 +42,14 @@ class THRONPDFViewer extends PDFViewer {
     // Create the "default" pdf_viewer
     super(options);
 
+    // bind method to this for event handlers
     this.bindMethodsToThis();
+
+    // create the external services that will be used by some components (i.e. downloadManager for attachments)
     this.externalServices = getExternalServices(DefaultExternalServices);
     this.downloadManager = this.externalServices.createDownloadManager();
+
+    // Create the sidebar and other useful components
     this.initComponents();
   }
 
@@ -111,11 +116,9 @@ class THRONPDFViewer extends PDFViewer {
       attachmentsView: attachmentsViewContainer[0]
 
     }, this.l10n);
-
     this.pdfSidebar.onToggled = this.onToggleSidebar;
 
-    this.eventBus.on('pagerendered', this.onPageRendered);
-    this.eventBus.on('pagechanging', this.onPageChanging);
+    this.attachEventListeners();
   }
 
   /**
@@ -252,9 +255,17 @@ class THRONPDFViewer extends PDFViewer {
   }
 
   /**
-   * Unbind all methods attached to the eventBus
+   * Attach event listeners
    */
-  unbindMethods() {
+  attachEventListeners() {
+    this.eventBus.on('pagerendered', this.onPageRendered);
+    this.eventBus.on('pagechanging', this.onPageChanging);
+  }
+
+  /**
+   * Unbind all attached event listeners.
+   */
+  removeEventListeners() {
     this.eventBus.off('pagerendered', this.onPageRendered);
     this.eventBus.off('pagechanging', this.onPageChanging);
   }
