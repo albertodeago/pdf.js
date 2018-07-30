@@ -307,13 +307,6 @@ var PDFViewer = (function pdfViewer() {
     },
 
     /**
-     * Abstract method, override in subclass if needed
-     */
-    onAfterSetDocument() {
-      // to be overrided
-    },
-
-    /**
      * @param pdfDocument {PDFDocument}
      */
     setDocument(pdfDocument) {
@@ -360,8 +353,6 @@ var PDFViewer = (function pdfViewer() {
 
       var firstPagePromise = pdfDocument.getPage(1);
       this.firstPagePromise = firstPagePromise;
-
-      this.onAfterSetDocument(pdfDocument);
 
       // Fetch a single page so we can get a viewport that will be the default
       // viewport for all pages

@@ -144,13 +144,11 @@ class PDFAttachmentViewer {
       div.className = 'attachmentsItem';
       var button = document.createElement('button');
       button.textContent = filename;
-
-      // commented because we only allow download of attachments
-      // if (/\.pdf$/i.test(filename) && !PDFJS.disableCreateObjectURL) {
-      //   this._bindPdfLink(button, item.content, filename);
-      // } else {
-      this._bindLink(button, item.content, filename);
-      // }
+      if (/\.pdf$/i.test(filename) && !PDFJS.disableCreateObjectURL) {
+        this._bindPdfLink(button, item.content, filename);
+      } else {
+        this._bindLink(button, item.content, filename);
+      }
 
       div.appendChild(button);
       this.container.appendChild(div);
