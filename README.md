@@ -1,3 +1,34 @@
+## Basic THRON explanation
+Let's get a super simple explanation about PDFJS.
+PDFJS is a big project created and maintained by the Mozilla team, it's a js library to display pdf on the browser.
+It's mainly composed by 2 part:
+* the pdfjs library itself, can be found in the 'src' folder and the final build is usually composed by 2 files 'pdf.js' and 'pdf.worker.js'. 
+This is the core of the library and it's responsible of actually reading the pdf and transforming into a PDFDocument js object (it's a custom object).
+We in THRON never modified this part. 
+* the web part, this is collection of components and in the repository is under the 'web' folder. 
+This components are responsible of the rendering of all the components used to let the user interact with the pdf (the sidebar, the zoom buttons, the toolbar etc...)
+running the example of the Mozilla team (viewer.html is the file to open to see it) the entry point used to load the UI is 'app.js'. This script load pretty much 
+every component contained in the 'web' folder and make everything works together by attaching listeners and other things.
+
+## THRON Customizations and how to customize
+In the old THRON Player (PL5) the pdf reproducer was an iframe pointing to the mozilla producer with the pdf passed as url in the queryparam; so it was 'as is' without any customization.
+
+With the coming of the THRON Content Experience (CE1, that is a completely new Player built from zero) THRON decided to customize a bit the pdf UI reproducer.
+This was done by importing the pdfViewer ('pdf_viewer.js') file that ships the basic  UI components (not everything) and customizing some component, mainly with 
+adding some 'th' classes and customizing with css.
+
+### Building for THRON
+* gulp generic builds the pdf library. This is super intensive and probably to make that work you have to run with some nodejs options like   
+gulp generic --max-old-space-size=10000 to increase the heap space to 10gb (in my machine it used 8gb of ram the compilation)
+
+* gulp build builds everything. This means both the web components and the pdf library. This is super intensive too having the pdf to compile.
+
+* gulp components builds only the component part. This will output the built component in the folder build/components (this is not memory intensive)
+  
+ 999% of the time we will only need gulp components, than we have to copy-paste the component folder generated (in build/components) in the thron-content-experience repository under 
+ src\js\players\doc\js\lib\pdfjs-dist overwriting the component directory.
+ 
+
 # PDF.js
 
 PDF.js is a Portable Document Format (PDF) viewer that is built with HTML5.
