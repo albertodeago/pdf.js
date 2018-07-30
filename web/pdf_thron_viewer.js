@@ -1,13 +1,10 @@
 import { PDFViewer } from "./pdf_viewer";
 
-import { CursorTool, PDFCursorTools } from './pdf_cursor_tools';
 import { PDFThumbnailViewer } from './pdf_thumbnail_viewer';
 import { PDFAttachmentViewer } from './pdf_attachment_viewer';
 import { PDFOutlineViewer } from './pdf_outline_viewer';
-import { PDFThumbnailView } from './pdf_thumbnail_view';
 import { SidebarView, PDFSidebar } from './pdf_sidebar';
 import { THRONGenericCom, getExternalServices } from './thron_genericcom';
-// import {PDFViewerApplication} from "./app";
 import {animationStarted, DEFAULT_SCALE_VALUE} from "./ui_utils";
 
 
@@ -45,46 +42,30 @@ class THRONPDFViewer extends PDFViewer {
     // Create the "default" pdf_viewer
     super(options);
 
+    this.bindMethodsToThis();
     this.externalServices = getExternalServices(DefaultExternalServices);
     this.downloadManager = this.externalServices.createDownloadManager();
     this.initComponents();
-
-    console.log("Created a THRONPDFViewer");
   }
 
   /**
-   * Init other useful components
+   * Bind methods to the right 'this'
+   */
+  bindMethodsToThis() {
+    this.onToggleSidebar = this.onToggleSidebar.bind(this);
+    this.onPageChanging = this.onPageChanging.bind(this);
+    this.onPageRendered = this.onPageRendered.bind(this);
+  }
+
+  /**
+   * Init other useful components like Sidebar and every view inside it.
    */
   initComponents() {
-    // let thumbnailButton = $('<button id="thumbnailButton">thumbnailButton</button>');
-    // $('body').append(thumbnailButton);
-    // let outlineButton = $('<button id="thumbnailButton">outlineButton</button>');
-    // $('body').append(outlineButton);
-    // let attachmentsButton = $('<button id="thumbnailButton">attachmentsButton</button>');
-    // $('body').append(attachmentsButton);
-    let toogleButton = $('<button id="thumbnailButton">toogle</button>');
+    let toogleButton = $('<button id="thumbnailButton">toggle</button>');
     toogleButton[0].addEventListener('click', function() {
       this.pdfSidebar.toggle();
     }.bind(this));
     $('body').append(toogleButton);
-
-    // let thumbViewContainer = $('<div id="thumbView"></div>');
-    // let outlineViewContainer = $('<div id="outlineView"></div>');
-    // let attachmentsViewContainer = $('<div id="attachmentsView"></div>');
-    // let sidebarContainer = $('<div id="sidebar" class="th-sidebar" style="\n' +
-    //   '      position: absolute;\n' +
-    //   '      top: 0;\n' +
-    //   '      bottom: 0;\n' +
-    //   '      left: 0;\n' +
-    //   '      width: 250px;\n' +
-    //   '      background: sandybrown;\n' +
-    //   '      overflow-y: scroll;\n' +
-    //   '      z-index: 5;"\n' +
-    //   '      >');
-    // sidebarContainer.append(thumbViewContainer);
-    // sidebarContainer.append(outlineViewContainer);
-    // sidebarContainer.append(attachmentsViewContainer);
-    // $('body').append(sidebarContainer);
 
     const thumbnailButton = $(this.container).find('#viewThumbnail');
     const outlineButton = $(this.container).find('#viewOutline');
@@ -131,78 +112,58 @@ class THRONPDFViewer extends PDFViewer {
 
     }, this.l10n);
 
-    this.pdfSidebar.onToggled = function() {
-      // this.renderingQueue.printing = this.printing;
-      this.renderingQueue.isThumbnailViewEnabled = this.pdfSidebar.isThumbnailViewVisible;
-      this.renderingQueue.renderHighestPriority();
-    }.bind(this);
+    this.pdfSidebar.onToggled = this.onToggleSidebar;
 
-    this.eventBus.on('pagerendered', function(e) {
-      let pageNumber = e.pageNumber;
-      let pageIndex = pageNumber - 1;
-      let pageView = this.getPageView(pageIndex);
+    this.eventBus.on('pagerendered', this.onPageRendered);
+    this.eventBus.on('pagechanging', this.onPageChanging);
+  }
 
-      // If the page is still visible when it has finished rendering,
-      // ensure that the page number input loading indicator is hidden.
-      if (pageNumber === this.page) {
-        this.toolbar.updateLoadingIndicatorState(false);
-      }
+  /**
+   * Click handler for sidebar toggle button
+   */
+  onToggleSidebar() {
+    // this.renderingQueue.printing = this.printing;
+    this.renderingQueue.isThumbnailViewEnabled = this.pdfSidebar.isThumbnailViewVisible;
+    this.renderingQueue.renderHighestPriority();
+  }
 
-      // Prevent errors in the edge-case where the PDF document is removed *before*
-      // the 'pagerendered' event handler is invoked.
-      if (!pageView) {
-        return;
-      }
+  /**
+   * Page rendered event handler
+   * @param e {Event}
+   */
+  onPageRendered(e) {
+    let pageNumber = e.pageNumber;
+    let pageIndex = pageNumber - 1;
+    let pageView = this.getPageView(pageIndex);
 
-      // Use the rendered page to set the corresponding thumbnail image.
-      if (true || this.pdfSidebar.isThumbnailViewVisible) { // TODO true ||
-        let thumbnailView = this.pdfThumbnailViewer.getThumbnail(pageIndex);
-        thumbnailView.setImage(pageView);
-      }
+    // If the page is still visible when it has finished rendering,
+    // ensure that the page number input loading indicator is hidden.
+    if (pageNumber === this.page) {
+      this.toolbar.updateLoadingIndicatorState(false);
+    }
 
-      // if (PDFJS.pdfBug && Stats.enabled && pageView.stats) {
-      //   Stats.add(pageNumber, pageView.stats);
-      // }
-      //
-      // if (pageView.error) {
-      //   PDFViewerApplication.l10n.get('rendering_error', null,
-      //     'An error occurred while rendering the page.').then((msg) => {
-      //     PDFViewerApplication.error(msg, pageView.error);
-      //   });
-      // }
-      //
-      // if (typeof PDFJSDev !== 'undefined' &&
-      //   PDFJSDev.test('FIREFOX || MOZCENTRAL')) {
-      //   PDFViewerApplication.externalServices.reportTelemetry({
-      //     type: 'pageInfo',
-      //   });
-      //   // It is a good time to report stream and font types.
-      //   PDFViewerApplication.pdfDocument.getStats().then(function (stats) {
-      //     PDFViewerApplication.externalServices.reportTelemetry({
-      //       type: 'documentStats',
-      //       stats,
-      //     });
-      //   });
-      // }
-    }.bind(this));
-    this.eventBus.on('pagechanging', function(e) {
-      var page = e.pageNumber;
+    // Prevent errors in the edge-case where the PDF document is removed *before*
+    // the 'pagerendered' event handler is invoked.
+    if (!pageView) {
+      return;
+    }
 
-      // this.toolbar.setPageNumber(page, e.pageLabel || null);
-      // this.secondaryToolbar.setPageNumber(page);
+    // Use the rendered page to set the corresponding thumbnail image.
+    if (true || this.pdfSidebar.isThumbnailViewVisible) { // TODO true ||
+      let thumbnailView = this.pdfThumbnailViewer.getThumbnail(pageIndex);
+      thumbnailView.setImage(pageView);
+    }
+  }
 
-      if (true || this.pdfSidebar.isThumbnailViewVisible) { // TODO true ||
-        this.pdfThumbnailViewer.scrollThumbnailIntoView(page);
-      }
-
-      // we need to update stats
-      // if (PDFJS.pdfBug && Stats.enabled) {
-      //   var pageView = PDFViewerApplication.pdfViewer.getPageView(page - 1);
-      //   if (pageView.stats) {
-      //     Stats.add(page, pageView.stats);
-      //   }
-      // }
-    }.bind(this));
+  /**
+   * Page changing event handler
+   * @param e {Event}
+   */
+  onPageChanging(e) {
+    const page = e.pageNumber;
+    if (true || this.pdfSidebar.isThumbnailViewVisible) { // TODO true ||
+      this.pdfThumbnailViewer.scrollThumbnailIntoView(page);
+    }
   }
 
   /**
@@ -221,32 +182,31 @@ class THRONPDFViewer extends PDFViewer {
     let onePageRendered = this.onePageRendered;
 
     this.firstPagePromise.then((pdfPage) => {
-      debugger;
 
-        this.setInitialView(null, { sidebarView: 1 });
-        // initialParams.hash = storedHash;
+      this.setInitialView(null, { sidebarView: 1 });
+      // initialParams.hash = storedHash;
 
-        // Make all navigation keys work on document load,
-        // unless the viewer is embedded in a web page.
-        if (!this.isViewerEmbedded) {
-          this.focus();
-        }
-        return pagesPromise;
-      }).then(() => {
-        // For documents with different page sizes, once all pages are resolved,
-        // ensure that the correct location becomes visible on load.
-        // if (!initialParams.destination && !initialParams.bookmark &&
-        //   !initialParams.hash) {
-        //   return;
-        // }
-        // if (this.hasEqualPageSizes) {
-        //   return;
-        // }
-        // this.initialDestination = initialParams.destination;
-        // this.initialBookmark = initialParams.bookmark;
-		//
-        // this.pdfViewer.currentScaleValue = this.pdfViewer.currentScaleValue;
-        // this.setInitialView(initialParams.hash);
+      // Make all navigation keys work on document load,
+      // unless the viewer is embedded in a web page.
+      if (!this.isViewerEmbedded) {
+        this.focus();
+      }
+      return pagesPromise;
+    }).then(() => {
+      // For documents with different page sizes, once all pages are resolved,
+      // ensure that the correct location becomes visible on load.
+      // if (!initialParams.destination && !initialParams.bookmark &&
+      //   !initialParams.hash) {
+      //   return;
+      // }
+      // if (this.hasEqualPageSizes) {
+      //   return;
+      // }
+      // this.initialDestination = initialParams.destination;
+      // this.initialBookmark = initialParams.bookmark;
+
+      // this.pdfViewer.currentScaleValue = this.pdfViewer.currentScaleValue;
+      // this.setInitialView(initialParams.hash);
     });
 
     Promise.all([animationStarted, onePageRendered]).then(() => {
@@ -289,6 +249,14 @@ class THRONPDFViewer extends PDFViewer {
     //   // Setting the default one.
     //   this.pdfViewer.currentScaleValue = DEFAULT_SCALE_VALUE;
     // }
+  }
+
+  /**
+   * Unbind all methods attached to the eventBus
+   */
+  unbindMethods() {
+    this.eventBus.off('pagerendered', this.onPageRendered);
+    this.eventBus.off('pagechanging', this.onPageChanging);
   }
 
 }
