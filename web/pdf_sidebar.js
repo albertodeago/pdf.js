@@ -15,6 +15,7 @@
 
 import { NullL10n } from './ui_utils';
 import { RenderingStates } from './pdf_rendering_queue';
+import THRONHelper from './thron_helper';
 
 const UI_NOTIFICATION_CLASS = 'pdfSidebarNotification';
 
@@ -59,7 +60,7 @@ class PDFSidebar {
    * @param {IL10n} l10n - Localization service.
    */
   constructor(options, l10n = NullL10n) {
-    this.isOpen = false;
+    this.isOpen = true;
     this.active = SidebarView.THUMBS;
     this.isInitialViewSet = false;
 
@@ -81,6 +82,10 @@ class PDFSidebar {
     this.thumbnailButton = options.thumbnailButton;
     this.outlineButton = options.outlineButton;
     this.attachmentsButton = options.attachmentsButton;
+
+    this.THRONThumbnailButton = this.thumbnailButton.querySelector('.th-button');
+    this.THRONOutlineButton = this.outlineButton.querySelector('.th-button');
+    this.THRONAttachmentsButton = this.attachmentsButton.querySelector('.th-button');
 
     this.thumbnailView = options.thumbnailView;
     this.outlineView = options.outlineView;
@@ -164,13 +169,13 @@ class PDFSidebar {
 
     switch (view) {
       case SidebarView.THUMBS:
-        this.thumbnailButton.classList.add('toggled');
-        this.outlineButton.classList.remove('toggled');
-        this.attachmentsButton.classList.remove('toggled');
+        THRONHelper.addClass(this.THRONThumbnailButton, 'th-button-color-active');
+        THRONHelper.removeClass(this.THRONOutlineButton, 'th-button-color-active');
+        THRONHelper.removeClass(this.THRONAttachmentsButton, 'th-button-color-active');
 
-        this.thumbnailView.classList.remove('hidden');
-        this.outlineView.classList.add('hidden');
-        this.attachmentsView.classList.add('hidden');
+        THRONHelper.removeClass(this.thumbnailView, 'th-hidden');
+        THRONHelper.addClass(this.outlineView, 'th-hidden');
+        THRONHelper.addClass(this.attachmentsView, 'th-hidden');
 
         if (this.isOpen && isViewChanged) {
           this._updateThumbnailViewer();
@@ -178,32 +183,25 @@ class PDFSidebar {
         }
         break;
       case SidebarView.OUTLINE:
-        if (this.outlineButton.disabled) {
-          return;
-        }
-        this.thumbnailButton.classList.remove('toggled');
-        this.outlineButton.classList.add('toggled');
-        this.attachmentsButton.classList.remove('toggled');
+        THRONHelper.removeClass(this.THRONThumbnailButton, 'th-button-color-active');
+        THRONHelper.addClass(this.THRONOutlineButton, 'th-button-color-active');
+        THRONHelper.removeClass(this.THRONAttachmentsButton, 'th-button-color-active');
 
-        this.thumbnailView.classList.add('hidden');
-        this.outlineView.classList.remove('hidden');
-        this.attachmentsView.classList.add('hidden');
+        THRONHelper.addClass(this.thumbnailView, 'th-hidden');
+        THRONHelper.removeClass(this.outlineView, 'th-hidden');
+        THRONHelper.addClass(this.attachmentsView, 'th-hidden');
         break;
       case SidebarView.ATTACHMENTS:
-        if (this.attachmentsButton.disabled) {
-          return;
-        }
-        this.thumbnailButton.classList.remove('toggled');
-        this.outlineButton.classList.remove('toggled');
-        this.attachmentsButton.classList.add('toggled');
+        THRONHelper.removeClass(this.THRONThumbnailButton, 'th-button-color-active');
+        THRONHelper.removeClass(this.THRONOutlineButton, 'th-button-color-active');
+        THRONHelper.addClass(this.THRONAttachmentsButton, 'th-button-color-active');
 
-        this.thumbnailView.classList.add('hidden');
-        this.outlineView.classList.add('hidden');
-        this.attachmentsView.classList.remove('hidden');
+        THRONHelper.addClass(this.thumbnailView, 'th-hidden');
+        THRONHelper.addClass(this.outlineView, 'th-hidden');
+        THRONHelper.removeClass(this.attachmentsView, 'th-hidden');
         break;
       default:
-        console.error('PDFSidebar_switchView: "' + view +
-                      '" is an unsupported value.');
+        console.error('PDFSidebar_switchView: "' + view + '" is an unsupported value.');
         return;
     }
     // Update the active view *after* it has been validated above,
@@ -395,13 +393,19 @@ class PDFSidebar {
     });
 
     this.outlineButton.addEventListener('click', () => {
+      if(THRONHelper.hasClass(this.THRONOutlineButton, 'th-button-disabled'))
+        return;
       this.switchView(SidebarView.OUTLINE);
     });
     this.outlineButton.addEventListener('dblclick', () => {
+      if(THRONHelper.hasClass(this.THRONOutlineButton, 'th-button-disabled'))
+        return;
       this.pdfOutlineViewer.toggleOutlineTree();
     });
 
     this.attachmentsButton.addEventListener('click', () => {
+      if(THRONHelper.hasClass(this.THRONAttachmentsButton, 'th-button-disabled'))
+        return;
       this.switchView(SidebarView.ATTACHMENTS);
     });
 
@@ -409,28 +413,18 @@ class PDFSidebar {
     this.eventBus.on('outlineloaded', (evt) => {
       var outlineCount = evt.outlineCount;
 
-      this.outlineButton.disabled = !outlineCount;
-
-      if (outlineCount) {
-        this._showUINotification(SidebarView.OUTLINE);
-      } else if (this.active === SidebarView.OUTLINE) {
-        // If the outline view was opened during document load, switch away
-        // from it if it turns out that the document has no outline.
-        this.switchView(SidebarView.THUMBS);
+      if(!outlineCount && !THRONHelper.hasClass(this.outlineButton, 'th-button-disabled')) {
+        THRONHelper.addClass(this.THRONOutlineButton, "th-button-disabled");
+        this.switchView(SidebarView.THUMBS); // switch to thumbnails if there are no outline
       }
     });
 
     this.eventBus.on('attachmentsloaded', (evt) => {
       var attachmentsCount = evt.attachmentsCount;
 
-      this.attachmentsButton.disabled = !attachmentsCount;
-
-      if (attachmentsCount) {
-        this._showUINotification(SidebarView.ATTACHMENTS);
-      } else if (this.active === SidebarView.ATTACHMENTS) {
-        // If the attachment view was opened during document load, switch away
-        // from it if it turns out that the document has no attachments.
-        this.switchView(SidebarView.THUMBS);
+      if(!attachmentsCount && !THRONHelper.hasClass(this.attachmentsButton, 'th-button-disabled')) {
+        THRONHelper.addClass(this.THRONAttachmentsButton, "th-button-disabled");
+        this.switchView(SidebarView.THUMBS); // switch to thumbnails if there are no attachments
       }
     });
 

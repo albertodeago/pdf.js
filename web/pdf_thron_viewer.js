@@ -5,6 +5,7 @@ import { PDFAttachmentViewer } from './pdf_attachment_viewer';
 import { PDFOutlineViewer } from './pdf_outline_viewer';
 import { SidebarView, PDFSidebar } from './pdf_sidebar';
 import { THRONGenericCom, getExternalServices } from './thron_genericcom';
+import { THRONSelectors } from "./thron_selectors";
 import {animationStarted, DEFAULT_SCALE_VALUE} from "./ui_utils";
 
 
@@ -34,6 +35,15 @@ var DefaultExternalServices = {
 
 class THRONPDFViewer extends PDFViewer {
 
+  /**
+   *
+   * @param {PDFSidebarOptions} options
+   * @param {HTMLElement} options.sidebarContainer the div where the sidebar will be rendered
+   * @param {HTMLElement} options.container the div where the pdf viewer will be rendered
+   * @param {IPDFLinkService} options.linkService
+   * @param {l10n} options.l10n
+   * @param {String} options.instanceId the instance identifier of the THRON player
+   */
   constructor(options = {container: null, linkService: null, l10n: null, instanceId: null}) {
     if(!options || !options.container || !options.linkService || !options.l10n || options.instanceId == null) {
       throw new Error("Missing required parameters for THRONPDFViewer constructor");
@@ -41,6 +51,8 @@ class THRONPDFViewer extends PDFViewer {
 
     // Create the "default" pdf_viewer
     super(options);
+
+    this.sidebarContainer = options.sidebarContainer;
 
     // bind method to this for event handlers
     this.bindMethodsToThis();
@@ -66,35 +78,34 @@ class THRONPDFViewer extends PDFViewer {
    * Init other useful components like Sidebar and every view inside it.
    */
   initComponents() {
-    let toogleButton = $('<button id="thumbnailButton">toggle</button>');
+    let toogleButton = $('<button id="thumbnailButton">toggle</button>'); // TODO remove this!
     toogleButton[0].addEventListener('click', function() {
       this.pdfSidebar.toggle();
     }.bind(this));
-    $('body').append(toogleButton);
+    $('body').append(toogleButton);   // TODO THERE IS NO $
 
-    const thumbnailButton = $(this.container).find('#viewThumbnail');
-    const outlineButton = $(this.container).find('#viewOutline');
-    const attachmentsButton = $(this.container).find('#viewAttachments');
-    // const toggleButton = ???;
-    const thumbViewContainer = $(this.container).find('#thumbnailView');
-    const outlineViewContainer = $(this.container).find('#outlineView');
-    const attachmentsViewContainer = $(this.container).find('#attachmentsView');
-    const sidebarContainer = $(this.container).find('#sidebarContainer');
+    const thumbnailButton = this.sidebarContainer.querySelector(THRONSelectors.BUTTONS.THUMBNAIL);
+    const outlineButton = this.sidebarContainer.querySelector(THRONSelectors.BUTTONS.OUTLINE);
+    const attachmentsButton = this.sidebarContainer.querySelector(THRONSelectors.BUTTONS.ATTACHMENTS);
+    // const toggleButton = ???;  // TODO
+    const thumbViewContainer = this.sidebarContainer.querySelector(THRONSelectors.VIEWS.THUMBNAIL);
+    const outlineViewContainer = this.sidebarContainer.querySelector(THRONSelectors.VIEWS.OUTLINE);
+    const attachmentsViewContainer = this.sidebarContainer.querySelector(THRONSelectors.VIEWS.ATTACHMENTS);
 
     this.pdfThumbnailViewer = new PDFThumbnailViewer({
-      container: thumbViewContainer[0],
+      container: thumbViewContainer,
       linkService: this.linkService,
       renderingQueue: this.renderingQueue,
       l10n: this.l10n
     });
     this.renderingQueue.setThumbnailViewer(this.pdfThumbnailViewer);
     this.pdfOutlineViewer = new PDFOutlineViewer({
-      container: outlineViewContainer[0],
+      container: outlineViewContainer,
       eventBus: this.eventBus,
       linkService: this.linkService
     });
     this.pdfAttachmentViewer = new PDFAttachmentViewer({
-      container: attachmentsViewContainer[0],
+      container: attachmentsViewContainer,
       eventBus: this.eventBus,
       downloadManager: this.downloadManager
     });
@@ -105,15 +116,15 @@ class THRONPDFViewer extends PDFViewer {
       eventBus: this.eventBus,
 
       mainContainer: this.container,
-      outerContainer: sidebarContainer[0],
-      thumbnailButton: thumbnailButton[0],
-      outlineButton: outlineButton[0],
-      attachmentsButton: attachmentsButton[0],
-      toggleButton: toogleButton[0],
+      outerContainer: this.sidebarContainer,
+      thumbnailButton: thumbnailButton,
+      outlineButton: outlineButton,
+      attachmentsButton: attachmentsButton,
+      toggleButton: toogleButton[0],  // TODO toogle button must be removed or something else
 
-      thumbnailView: thumbViewContainer[0],
-      outlineView: outlineViewContainer[0],
-      attachmentsView: attachmentsViewContainer[0]
+      thumbnailView: thumbViewContainer,
+      outlineView: outlineViewContainer,
+      attachmentsView: attachmentsViewContainer
 
     }, this.l10n);
     this.pdfSidebar.onToggled = this.onToggleSidebar;
@@ -152,7 +163,7 @@ class THRONPDFViewer extends PDFViewer {
     }
 
     // Use the rendered page to set the corresponding thumbnail image.
-    if (true || this.pdfSidebar.isThumbnailViewVisible) { // TODO true ||
+    if (this.pdfSidebar.isThumbnailViewVisible) {
       let thumbnailView = this.pdfThumbnailViewer.getThumbnail(pageIndex);
       thumbnailView.setImage(pageView);
     }
@@ -164,7 +175,7 @@ class THRONPDFViewer extends PDFViewer {
    */
   onPageChanging(e) {
     const page = e.pageNumber;
-    if (true || this.pdfSidebar.isThumbnailViewVisible) { // TODO true ||
+    if (this.pdfSidebar.isThumbnailViewVisible) {
       this.pdfThumbnailViewer.scrollThumbnailIntoView(page);
     }
   }
@@ -176,18 +187,13 @@ class THRONPDFViewer extends PDFViewer {
   onAfterSetDocument(pdfDocument) {
     this.linkService.setDocument(pdfDocument);
     this.pdfThumbnailViewer.setDocument(pdfDocument);
-    // this.pdfDocumentProperties.setDocument(pdfDocument, this.url);
 
-    // let pdfViewer = this.pdfViewer;
-    // pdfViewer.setDocument(pdfDocument);
-    // let firstPagePromise = pdfViewer.firstPagePromise;
     let pagesPromise = this.pagesPromise;
     let onePageRendered = this.onePageRendered;
 
     this.firstPagePromise.then((pdfPage) => {
 
       this.setInitialView(null, { sidebarView: 1 });
-      // initialParams.hash = storedHash;
 
       // Make all navigation keys work on document load,
       // unless the viewer is embedded in a web page.
@@ -195,21 +201,6 @@ class THRONPDFViewer extends PDFViewer {
         this.focus();
       }
       return pagesPromise;
-    }).then(() => {
-      // For documents with different page sizes, once all pages are resolved,
-      // ensure that the correct location becomes visible on load.
-      // if (!initialParams.destination && !initialParams.bookmark &&
-      //   !initialParams.hash) {
-      //   return;
-      // }
-      // if (this.hasEqualPageSizes) {
-      //   return;
-      // }
-      // this.initialDestination = initialParams.destination;
-      // this.initialBookmark = initialParams.bookmark;
-
-      // this.pdfViewer.currentScaleValue = this.pdfViewer.currentScaleValue;
-      // this.setInitialView(initialParams.hash);
     });
 
     Promise.all([animationStarted, onePageRendered]).then(() => {
@@ -227,31 +218,6 @@ class THRONPDFViewer extends PDFViewer {
 
     this.isInitialViewSet = true;
     this.pdfSidebar.setInitialView(sidebarView);
-
-    // if (this.initialDestination) {
-    //   this.pdfLinkService.navigateTo(this.initialDestination);
-    //   this.initialDestination = null;
-    // } else if (this.initialBookmark) {
-    //   this.pdfLinkService.setHash(this.initialBookmark);
-    //   this.pdfHistory.push({ hash: this.initialBookmark, }, true);
-    //   this.initialBookmark = null;
-    // } else if (storedHash) {
-    //   this.pdfLinkService.setHash(storedHash);
-    // } else if (scale) {
-    //   this.pdfViewer.currentScaleValue = scale;
-    //   this.page = 1;
-    // }
-	//
-    // // Ensure that the correct page number is displayed in the UI,
-    // // even if the active page didn't change during document load.
-    // this.toolbar.setPageNumber(this.pdfViewer.currentPageNumber, this.pdfViewer.currentPageLabel);
-    // this.secondaryToolbar.setPageNumber(this.pdfViewer.currentPageNumber);
-	//
-    // if (!this.pdfViewer.currentScaleValue) {
-    //   // Scale was not initialized: invalid bookmark or scale was not specified.
-    //   // Setting the default one.
-    //   this.pdfViewer.currentScaleValue = DEFAULT_SCALE_VALUE;
-    // }
   }
 
   /**
