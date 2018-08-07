@@ -17,6 +17,21 @@ With the coming of the THRON Content Experience (CE1, that is a completely new P
 This was done by importing the pdfViewer ('pdf_viewer.js') file that ships the basic  UI components (not everything) and customizing some component, mainly with 
 adding some 'th' classes and customizing with css.
 
+### THRON Changelog
+We didn't keep a changelog until July 2018. Mainly the work done before was to put pdfjs library inside the THRONContentExperience and to instantiate the basic PDFViewer inside the player with some customized classes. 
+* July 2018 - task CNT-8205
+    * created a pdf_thron_viewer as entry point of the pdf viewer. This extends the standard PDFViewer created by pdfjs.
+    * Added the creation of sidebar components into THRONPDFViewer (pdf_thron_viewer). 
+    * Added some event listener in pdf_thron_viewer to handle events used to load and make it work the sidebar
+    * Added an 'hook' (onAfterSetDocument) in the PDFViewer. the THRONPDFViewer define that hook handler and there we init some things like setting the document to the thumbnail viewer, get the attachments and the outlines.
+    * Changed in pdf_attachment_viewer the logic inside the 'render' function. Now every attachment is downloaded at click instead of not downlading the pdf if they were attachment (default pdfjs is opening the pdf attachment in a new tab).
+    * Added 'thron_genericcom'. This is almost identical of 'genericcom', used inside the THRONPDFViewer setting the external preferences, this is useful to create a DownloadManager that handles the attachments download on user click 
+    * Added 'thron_helper' to add some helper functions, Extend it if you need!
+    * Added 'thron_selectors' to group up every selector used by the sidebar to avoid 'class dispersion'
+    * Created a THRON folder inside the pdfjs project to group up all THRON custom files. Most of them are copy-paste of the relative file (with the name without 'thron') but with different behaviour/customization.
+Note: Even if THRON doesn't show the pdf attachment view (because THRON has his own attatchments), we decided to implement the view 
+anyway and not display it so if in the future will become useful, we already got it.
+
 ### Building for THRON
 * gulp generic builds the pdf library. This is super intensive and probably to make that work you have to run with some nodejs options like   
 gulp generic --max-old-space-size=10000 to increase the heap space to 10gb (in my machine it used 8gb of ram the compilation)
