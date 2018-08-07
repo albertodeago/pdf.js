@@ -1,6 +1,6 @@
-import { BasePreferences } from './preferences';
-import { DownloadManager } from './download_manager';
-import { GenericL10n } from './genericl10n';
+import { BasePreferences } from '../preferences';
+import { DownloadManager } from '../download_manager';
+import { GenericL10n } from '../genericl10n';
 import { PDFJS } from 'pdfjs-lib';
 
 

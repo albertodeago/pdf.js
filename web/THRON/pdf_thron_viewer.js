@@ -1,12 +1,12 @@
-import { PDFViewer } from "./pdf_viewer";
+import { PDFViewer } from "../pdf_viewer";
 
-import { PDFThumbnailViewer } from './pdf_thumbnail_viewer';
-import { PDFAttachmentViewer } from './pdf_attachment_viewer';
-import { PDFOutlineViewer } from './pdf_outline_viewer';
-import { SidebarView, PDFSidebar } from './pdf_sidebar';
+import { PDFThumbnailViewer } from '../pdf_thumbnail_viewer';
+import { PDFAttachmentViewer } from '../pdf_attachment_viewer';
+import { PDFOutlineViewer } from '../pdf_outline_viewer';
+import { SidebarView, PDFSidebar } from './pdf_thron_sidebar';
 import { THRONGenericCom, getExternalServices } from './thron_genericcom';
 import { THRONSelectors } from "./thron_selectors";
-import {animationStarted, DEFAULT_SCALE_VALUE} from "./ui_utils";
+import {animationStarted, DEFAULT_SCALE_VALUE} from "../ui_utils";
 
 
 var DefaultExternalServices = {
