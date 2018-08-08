@@ -95,6 +95,10 @@ class PDFSidebar {
     this.attachmentsButton.disabled = false;
   }
 
+  getIsOpen() {
+    return this.isOpen;
+  }
+
   /**
    * @returns {number} One of the values in {SidebarView}.
    */
