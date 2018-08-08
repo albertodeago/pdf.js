@@ -5,6 +5,7 @@ const BASE_SELECTORS = {
 };
 const THRONSelectors = {
   BUTTONS: {
+    SIMPLE_BUTTON: '.th-button',
     THUMBNAIL: BASE_SELECTORS.SIDEBAR_BUTTON + "--thumbnail",
     OUTLINE: BASE_SELECTORS.SIDEBAR_BUTTON + "--outline",
     ATTACHMENTS: BASE_SELECTORS.SIDEBAR_BUTTON + "--attachments",

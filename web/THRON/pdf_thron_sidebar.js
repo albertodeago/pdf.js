@@ -5,6 +5,7 @@
 import { NullL10n } from '../ui_utils';
 import { RenderingStates } from '../pdf_rendering_queue';
 import THRONHelper from './thron_helper';
+import { THRONSelectors } from './thron_selectors';
 
 const UI_NOTIFICATION_CLASS = 'pdfSidebarNotification';
 
@@ -25,8 +26,6 @@ const SidebarView = {
  * @property {HTMLDivElement} outerContainer - The outer container
  *   (encasing both the viewer and sidebar elements).
  * @property {EventBus} eventBus - The application event bus.
- * @property {HTMLButtonElement} toggleButton - The button used for
- *   opening/closing the sidebar.
  * @property {HTMLButtonElement} thumbnailButton - The button used to show
  *   the thumbnail view.
  * @property {HTMLButtonElement} outlineButton - The button used to show
@@ -49,7 +48,7 @@ class PDFSidebar {
    * @param {IL10n} l10n - Localization service.
    */
   constructor(options, l10n = NullL10n) {
-    this.isOpen = true;
+    this.isOpen = false;
     this.active = SidebarView.THUMBS;
     this.isInitialViewSet = false;
 
@@ -66,15 +65,15 @@ class PDFSidebar {
     this.mainContainer = options.mainContainer;
     this.outerContainer = options.outerContainer;
     this.eventBus = options.eventBus;
-    this.toggleButton = options.toggleButton;
+    // this.toggleButton = options.toggleButton;
 
     this.thumbnailButton = options.thumbnailButton;
     this.outlineButton = options.outlineButton;
     this.attachmentsButton = options.attachmentsButton;
 
-    this.THRONThumbnailButton = this.thumbnailButton.querySelector('.th-button');
-    this.THRONOutlineButton = this.outlineButton.querySelector('.th-button');
-    this.THRONAttachmentsButton = this.attachmentsButton.querySelector('.th-button');
+    this.THRONThumbnailButton = this.thumbnailButton.querySelector(THRONSelectors.BUTTONS.SIMPLE_BUTTON);
+    this.THRONOutlineButton = this.outlineButton.querySelector(THRONSelectors.BUTTONS.SIMPLE_BUTTON);
+    this.THRONAttachmentsButton = this.attachmentsButton.querySelector(THRONSelectors.BUTTONS.SIMPLE_BUTTON);
 
     this.thumbnailView = options.thumbnailView;
     this.outlineView = options.outlineView;
@@ -90,7 +89,6 @@ class PDFSidebar {
   reset() {
     this.isInitialViewSet = false;
 
-    this._hideUINotification(null);
     this.switchView(SidebarView.THUMBS);
 
     this.outlineButton.disabled = false;
@@ -133,7 +131,7 @@ class PDFSidebar {
       return;
     }
     var isViewPreserved = (view === this.visibleView);
-    this.switchView(view, /* forceOpen */ true);
+    this.switchView(view);
 
     if (isViewPreserved) {
       // Prevent dispatching two back-to-back `sidebarviewchanged` events,
@@ -207,7 +205,6 @@ class PDFSidebar {
     if (isViewChanged) {
       this._dispatchEvent();
     }
-    this._hideUINotification(this.active);
   }
 
   open() {
@@ -215,18 +212,12 @@ class PDFSidebar {
       return;
     }
     this.isOpen = true;
-    this.toggleButton.classList.add('toggled');
-
-    this.outerContainer.classList.add('sidebarMoving');
-    this.outerContainer.classList.add('sidebarOpen');
 
     if (this.active === SidebarView.THUMBS) {
       this._updateThumbnailViewer();
     }
     this._forceRendering();
     this._dispatchEvent();
-
-    this._hideUINotification(this.active);
   }
 
   close() {
@@ -234,10 +225,6 @@ class PDFSidebar {
       return;
     }
     this.isOpen = false;
-    this.toggleButton.classList.remove('toggled');
-
-    this.outerContainer.classList.add('sidebarMoving');
-    this.outerContainer.classList.remove('sidebarOpen');
 
     this._forceRendering();
     this._dispatchEvent();
@@ -295,87 +282,7 @@ class PDFSidebar {
   /**
    * @private
    */
-  _showUINotification(view) {
-    if (this.disableNotification) {
-      return;
-    }
-
-    this.l10n.get('toggle_sidebar_notification.title', null,
-      'Toggle Sidebar (document contains outline/attachments)').
-    then((msg) => {
-      this.toggleButton.title = msg;
-    });
-
-    if (!this.isOpen) {
-      // Only show the notification on the `toggleButton` if the sidebar is
-      // currently closed, to avoid unnecessarily bothering the user.
-      this.toggleButton.classList.add(UI_NOTIFICATION_CLASS);
-    } else if (view === this.active) {
-      // If the sidebar is currently open *and* the `view` is visible, do not
-      // bother the user with a notification on the corresponding button.
-      return;
-    }
-
-    switch (view) {
-      case SidebarView.OUTLINE:
-        this.outlineButton.classList.add(UI_NOTIFICATION_CLASS);
-        break;
-      case SidebarView.ATTACHMENTS:
-        this.attachmentsButton.classList.add(UI_NOTIFICATION_CLASS);
-        break;
-    }
-  }
-
-  /**
-   * @private
-   */
-  _hideUINotification(view) {
-    if (this.disableNotification) {
-      return;
-    }
-
-    var removeNotification = (view) => {
-      switch (view) {
-        case SidebarView.OUTLINE:
-          this.outlineButton.classList.remove(UI_NOTIFICATION_CLASS);
-          break;
-        case SidebarView.ATTACHMENTS:
-          this.attachmentsButton.classList.remove(UI_NOTIFICATION_CLASS);
-          break;
-      }
-    };
-
-    if (!this.isOpen && view !== null) {
-      // Only hide the notifications when the sidebar is currently open,
-      // or when it is being reset (i.e. `view === null`).
-      return;
-    }
-    this.toggleButton.classList.remove(UI_NOTIFICATION_CLASS);
-
-    if (view !== null) {
-      removeNotification(view);
-      return;
-    }
-    for (view in SidebarView) { // Remove all sidebar notifications on reset.
-      removeNotification(SidebarView[view]);
-    }
-
-    this.l10n.get('toggle_sidebar.title', null, 'Toggle Sidebar').
-    then((msg) => {
-      this.toggleButton.title = msg;
-    });
-  }
-
-  /**
-   * @private
-   */
   _addEventListeners() {
-    this.mainContainer.addEventListener('transitionend', (evt) => {
-      if (evt.target === this.mainContainer) {
-        this.outerContainer.classList.remove('sidebarMoving');
-      }
-    });
-
     // Buttons for switching views.
     this.thumbnailButton.addEventListener('click', () => {
       this.switchView(SidebarView.THUMBS);

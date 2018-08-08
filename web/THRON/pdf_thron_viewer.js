@@ -78,16 +78,10 @@ class THRONPDFViewer extends PDFViewer {
    * Init other useful components like Sidebar and every view inside it.
    */
   initComponents() {
-    let toogleButton = $('<button id="thumbnailButton">toggle</button>'); // TODO remove this!
-    toogleButton[0].addEventListener('click', function() {
-      this.pdfSidebar.toggle();
-    }.bind(this));
-    $('body').append(toogleButton);   // TODO THERE IS NO $
 
     const thumbnailButton = this.sidebarContainer.querySelector(THRONSelectors.BUTTONS.THUMBNAIL);
     const outlineButton = this.sidebarContainer.querySelector(THRONSelectors.BUTTONS.OUTLINE);
     const attachmentsButton = this.sidebarContainer.querySelector(THRONSelectors.BUTTONS.ATTACHMENTS);
-    // const toggleButton = ???;  // TODO
     const thumbViewContainer = this.sidebarContainer.querySelector(THRONSelectors.VIEWS.THUMBNAIL);
     const outlineViewContainer = this.sidebarContainer.querySelector(THRONSelectors.VIEWS.OUTLINE);
     const attachmentsViewContainer = this.sidebarContainer.querySelector(THRONSelectors.VIEWS.ATTACHMENTS);
@@ -120,7 +114,6 @@ class THRONPDFViewer extends PDFViewer {
       thumbnailButton: thumbnailButton,
       outlineButton: outlineButton,
       attachmentsButton: attachmentsButton,
-      toggleButton: toogleButton[0],  // TODO toogle button must be removed or something else
 
       thumbnailView: thumbViewContainer,
       outlineView: outlineViewContainer,
@@ -136,7 +129,6 @@ class THRONPDFViewer extends PDFViewer {
    * Click handler for sidebar toggle button
    */
   onToggleSidebar() {
-    // this.renderingQueue.printing = this.printing;
     this.renderingQueue.isThumbnailViewEnabled = this.pdfSidebar.isThumbnailViewVisible;
     this.renderingQueue.renderHighestPriority();
   }

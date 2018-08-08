@@ -29,6 +29,7 @@ We didn't keep a changelog until July 2018. Mainly the work done before was to p
     * Added 'thron_helper' to add some helper functions, Extend it if you need!
     * Added 'thron_selectors' to group up every selector used by the sidebar to avoid 'class dispersion'
     * Created a THRON folder inside the pdfjs project to group up all THRON custom files. Most of them are copy-paste of the relative file (with the name without 'thron') but with different behaviour/customization.
+    * Removed transition and ui notification system from the sidebar, now the sidebar toggle method is being called by a button inside our player (SidebarToggle) 
 Note: Even if THRON doesn't show the pdf attachment view (because THRON has his own attatchments), we decided to implement the view 
 anyway and not display it so if in the future will become useful, we already got it.
 
